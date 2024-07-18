@@ -1,23 +1,36 @@
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import {
   Form,
-  Link,
+  NavLink,
   Links,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useNavigation,
 } from "@remix-run/react";
 
-import { getContacts } from "./data";
+import { createEmptyContact, getContacts } from "./data";
 
-export const loader = async () => {
-  const contacts = await getContacts();
+export const action = async () => {
+  const contact = await createEmptyContact();
+  return redirect(`/contacts/${contact.id}/edit`);
+};
+
+export const loader = async ({
+  request,
+}: LoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q");
+  const contacts = await getContacts(q);
   return json({ contacts });
 };
 
-import type { LinksFunction } from "@remix-run/node";
+import type {
+  LinksFunction,
+  LoaderFunctionArgs,
+} from "@remix-run/node";
 
 import appStylesHref from "./app.css?url";
 
@@ -28,6 +41,7 @@ export const links: LinksFunction = () => [
 
 export default function App() {
   const { contacts } = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
 
   return (
     <html lang="en">
@@ -60,7 +74,16 @@ export default function App() {
               <ul>
                 {contacts.map((contact) => (
                   <li key={contact.id}>
-                    <Link to={`contacts/${contact.id}`}>
+                      <NavLink
+                        className={({ isActive, isPending }) =>
+                          isActive
+                            ? "active"
+                            : isPending
+                            ? "pending"
+                            : ""
+                        }
+                        to={`contacts/${contact.id}`}
+                      >
                       {contact.first || contact.last ? (
                         <>
                           {contact.first} {contact.last}
@@ -71,7 +94,8 @@ export default function App() {
                       {contact.favorite ? (
                         <span>★</span>
                       ) : null}
-                    </Link>
+                      </NavLink>
+
                   </li>
                 ))}
               </ul>
@@ -82,7 +106,12 @@ export default function App() {
             )}
           </nav>
         </div>
-        <div id="detail">
+        <div
+          className={
+            navigation.state === "loading" ? "loading" : ""
+          }
+          id="detail"
+        >
           <Outlet />
         </div>
         <ScrollRestoration />
