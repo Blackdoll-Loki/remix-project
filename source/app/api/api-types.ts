@@ -22,3 +22,22 @@ export type ContactObj = {
   contact: ContactMutation
 }
 
+type Post = {
+  id: number;
+  title: string;
+  body: string;
+  tags: string[];
+  reactions: {
+    likes: number;
+    dislikes: number;
+  };
+  views: number;
+  userId: number;
+};
+
+type PostsResponse = {
+  posts: Post[];
+  total: number;
+  skip: number;
+  limit: number;
+};
