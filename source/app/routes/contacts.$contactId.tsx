@@ -8,9 +8,9 @@ import {
   useLoaderData,
 } from "@remix-run/react";import type { FunctionComponent } from "react";
 import invariant from "tiny-invariant";
+import { getUserById } from "~/api/users";
 
 import type { ContactRecord } from "../data";
-
 import { getContact, updateContact } from "../data";
 
 export const action = async ({
@@ -24,19 +24,17 @@ export const action = async ({
   });
 };
 
-export const loader = async ({
-  params,
-}: LoaderFunctionArgs) => {
-  invariant(params.contactId, "Missing contactId param");
-  const contact = await getContact(params.contactId);
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  invariant(params.contactId, 'Missing contactId param');
+  const contact = await getUserById(params.contactId);
   if (!contact) {
-    throw new Response("Not Found", { status: 404 });
+    throw new Response('Not Found', { status: 404 });
   }
   return json({ contact });
 };
 
 export default function Contact() {
-  const { contact } = useLoaderData<typeof loader>();
+  const { contact } = useLoaderData<{ contact: ContactRecord }>();
 
   // const contact = {
   //   first: "Your",
@@ -114,7 +112,7 @@ const Favorite: FunctionComponent<{
     ? fetcher.formData.get("favorite") === "true"
     : contact.favorite;
 
-    
+
   return (
     <fetcher.Form method="post">
       <button
