@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // 🛑 Nothing in here has anything to do with Remix, it's just a fake database
 ////////////////////////////////////////////////////////////////////////////////
+import { useFetcher } from "react-router-dom";
+
 
 import { matchSorter } from "match-sorter";
 // @ts-expect-error - no types, but it's a tiny function
@@ -62,16 +64,17 @@ const fakeContacts = {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Handful of helper functions to be called from route loaders and actions
-export async function getContacts(query?: string | null) {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  let contacts = await fakeContacts.getAll();
-  if (query) {
-    contacts = matchSorter(contacts, query, {
-      keys: ["first", "last"],
-    });
-  }
-  return contacts.sort(sortBy("last", "createdAt"));
-}
+// export async function getContacts(query?: string | null) {
+//   await new Promise((resolve) => setTimeout(resolve, 500));
+//   let contacts = await fakeContacts.getAll();
+//   if (query) {
+//     contacts = matchSorter(contacts, query, {
+//       keys: ["first", "last"],
+//     });
+//   }
+//   return contacts.sort(sortBy("last", "createdAt"));
+// }
+
 
 export async function createEmptyContact() {
   const contact = await fakeContacts.create({});

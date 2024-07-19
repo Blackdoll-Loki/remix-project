@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { json, redirect, LoaderFunction } from "@remix-run/node";
 import {
   Form,
   NavLink,
@@ -11,24 +11,35 @@ import {
   useNavigation,
   useSubmit,
 } from "@remix-run/react";
+import {getUsers} from './api/users';
+
 
 import { useEffect } from "react";
 
 
-import { createEmptyContact, getContacts } from "./data";
+import { createEmptyContact} from "./data";
 
 export const action = async () => {
   const contact = await createEmptyContact();
   return redirect(`/contacts/${contact.id}/edit`);
 };
 
-export const loader = async ({
-  request,
-}: LoaderFunctionArgs) => {
-  const url = new URL(request.url);
-  const q = url.searchParams.get("q");
-  const contacts = await getContacts(q);
-  return json({ contacts, q });
+export const allUsersUrl = 'https://dummyjson.com/users';
+console.log(allUsersUrl)
+
+// export const loader = async ({
+//   request,
+// }: LoaderFunctionArgs) => {
+//   const url = new URL(request.url);
+//   console.log(url)
+//   const q = url.searchParams.get("q");
+//   const contacts = await getContacts(q);
+//   return json({ contacts, q });
+// };
+
+export const loader: LoaderFunction = async () => {
+  const contacts = await getUsers();
+  return json({ contacts });
 };
 
 import type {
@@ -44,7 +55,8 @@ export const links: LinksFunction = () => [
 
 
 export default function App() {
-  const { contacts, q } = useLoaderData<typeof loader>();
+  //const { contacts, q } = useLoaderData<typeof loader>();
+  const { contacts } = useLoaderData<typeof loader>()
   const navigation = useNavigation();
   const submit = useSubmit();
   const searching =
@@ -54,12 +66,12 @@ export default function App() {
   );
 
 
-  useEffect(() => {
-    const searchField = document.getElementById("q");
-    if (searchField instanceof HTMLInputElement) {
-      searchField.value = q || "";
-    }
-  }, [q]);
+  // useEffect(() => {
+  //   const searchField = document.getElementById("q");
+  //   if (searchField instanceof HTMLInputElement) {
+  //    searchField.value = q || "";
+  //   }
+  // }, [q]);
 
   return (
     <html lang="en">
@@ -73,17 +85,18 @@ export default function App() {
         <div id="sidebar">
           <h1>Remix Contacts</h1>
           <div>
-            <Form id="search-form" onChange={(event) => {
+            <Form id="search-form" /*onChange={(event) => {
                 const isFirstSearch = q === null;
                 submit(event.currentTarget, {
                   replace: !isFirstSearch,
                 });
-              }} role="search">
+              }}*/ role="search">
               <input
                 id="q"
                 className={searching ? "loading" : ""}
                 aria-label="Search contacts"
-                defaultValue={q || ""}
+                //defaultValue={q || ""}
+                defaultValue=""
                 placeholder="Search"
                 type="search"
                 name="q"
